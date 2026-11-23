@@ -23,7 +23,11 @@
 
         <section class="expense-form-card">
 
-            <h2>Add New Expense</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <p class="flash-message {{ category }}">{{ message }}</p>
+    {% endfor %}
+{% endwith %}
 
             <form action="{{ url_for('add_expense') }}" method="POST">
 

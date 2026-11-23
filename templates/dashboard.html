@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Daily Expense Tracker</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -21,22 +20,68 @@
     <main>
 
         <section class="dashboard">
+
             <h2>My Dashboard</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <p class="flash-message {{ category }}">{{ message }}</p>
+                {% endfor %}
+            {% endwith %}
 
             <div class="expense-card">
                 <h3>Total Expenses</h3>
-                <h2>&#8377;0.00</h2>
+
+                <h2>₹{{ "%.2f"|format(total_expenses) }}</h2>
+
                 <p>Your total spending</p>
             </div>
 
-            <a href="/add-expense" class="add-expense-btn">
-                + Add Expense
+            <a href="{{ url_for('add_expense') }}" class="add-expense-btn">
+                + Add New Expense
             </a>
+
+            <section class="expense-list">
+
+                <h2>Recent Expenses</h2>
+
+                {% if expenses %}
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Amount</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for expense in expenses %}
+                            <tr>
+                                <td>{{ expense["id"] }}</td>
+                                <td>₹{{ "%.2f"|format(expense["amount"]) }}</td>
+                                <td>{{ expense["category"] }}</td>
+                                <td>{{ expense["description"] or "-" }}</td>
+                                <td>{{ expense["expense_date"] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                {% else %}
+
+                    <p>No expenses found. Start by adding your first expense.</p>
+
+                {% endif %}
+
+            </section>
 
         </section>
 
     </main>
 
 </body>
-
 </html>
