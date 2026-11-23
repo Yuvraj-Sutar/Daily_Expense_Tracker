@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Daily Expense Tracker</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <header>
+        <h1>Daily Expense Tracker</h1>
+        <p>Welcome to your personal expense management system.</p>
+    </header>
+
+    <main>
+
+        <section class="dashboard">
+            <h2>My Dashboard</h2>
+
+            <div class="expense-card">
+                <h3>Total Expenses</h3>
+                <h2>&#8377;0.00</h2>
+                <p>Your total spending</p>
+            </div>
+
+            <a href="/add-expense" class="add-expense-btn">
+                + Add Expense
+            </a>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
