@@ -47,7 +47,7 @@ def add_expense():
         category = request.form.get("category", "").strip()
         expense_date = request.form.get("date", "").strip()
 
-        # Validate title
+        # Validate expense title
         if not title:
             flash("Expense title cannot be empty.", "error")
             return redirect(url_for("add_expense"))
@@ -60,11 +60,14 @@ def add_expense():
         try:
             amount = float(amount_text)
 
-            if not math.isfinite(amount) or amount <= 0:
+            if not math.isfinite(amount) or amount < 0.01:
                 raise ValueError
 
         except (ValueError, TypeError):
-            flash("Please enter a valid amount greater than zero.", "error")
+            flash(
+                "Please enter a valid amount of at least ₹0.01.",
+                "error"
+            )
             return redirect(url_for("add_expense"))
 
         # Validate category
@@ -75,6 +78,7 @@ def add_expense():
         # Validate date
         try:
             datetime.strptime(expense_date, "%Y-%m-%d")
+
         except ValueError:
             flash("Please enter a valid expense date.", "error")
             return redirect(url_for("add_expense"))
@@ -93,7 +97,10 @@ def add_expense():
 
         except Exception:
             app.logger.exception("Failed to save expense")
-            flash("Unable to save expense. Please try again.", "error")
+            flash(
+                "Unable to save expense. Please try again.",
+                "error"
+            )
             return redirect(url_for("add_expense"))
 
     return render_template("add_expense.html")
