@@ -91,20 +91,65 @@ def update_expense(
 
 
 # 5. DELETE - Remove an expense
+from database import get_connection
+
 def delete_expense(expense_id):
+    conn = get_connection()
+
+    cursor = conn.execute(
+        """
+        DELETE FROM expenses
+        WHERE id = ?
+        """,
+        (expense_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return cursor.rowcount > 0
+
+# 6. MONTHLY EXPENSE REPORT
+
+def get_monthly_expense_report():
 
     connection = get_connection()
 
     try:
-        query = "DELETE FROM expenses WHERE id = ?"
+        query = """
+            SELECT
+                strftime('%Y-%m', expense_date) AS month,
+                COUNT(*) AS total_transactions,
+                SUM(amount) AS total_spending
+            FROM expenses
+            GROUP BY strftime('%Y-%m', expense_date)
+            ORDER BY month DESC
+        """
 
-        cursor = connection.execute(
-            query, (expense_id,)
-        )
+        return connection.execute(query).fetchall()
 
-        connection.commit()
+    finally:
+        connection.close()
 
-        return cursor.rowcount > 0
+
+# 7. CATEGORY-WISE EXPENSE REPORT
+
+def get_category_expense_report():
+
+    connection = get_connection()
+
+    try:
+        query = """
+            SELECT
+                category,
+                COUNT(*) AS total_transactions,
+                SUM(amount) AS total_spending
+            FROM expenses
+            GROUP BY category
+            ORDER BY total_spending DESC
+        """
+
+        return connection.execute(query).fetchall()
 
     finally:
         connection.close()

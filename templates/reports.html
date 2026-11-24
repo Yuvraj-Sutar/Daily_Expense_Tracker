@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Expense Reports | Daily Expense Tracker</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <header>
+        <h1>Expense Reports</h1>
+        <p>Analyze your monthly and category-wise spending.</p>
+    </header>
+
+
+    <main>
+
+        <!-- BACK TO DASHBOARD -->
+
+        <a href="{{ url_for('home') }}" class="add-expense-btn">
+            ← Back to Dashboard
+        </a>
+
+
+        <!-- SUMMARY CARDS -->
+
+        <section class="report-summary">
+
+            <div class="summary-card">
+
+                <h3>Total Spending</h3>
+
+                <h2>
+                    ₹{{ "%.2f"|format(total_expenses) }}
+                </h2>
+
+                <p>All recorded expenses</p>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <h3>Highest Spending Month</h3>
+
+                {% if highest_month %}
+
+                    <h2>
+                        {{ highest_month["month"] }}
+                    </h2>
+
+                    <p>
+                        ₹{{ "%.2f"|format(
+                            highest_month["total_spending"]
+                        ) }}
+                    </p>
+
+                {% else %}
+
+                    <h2>N/A</h2>
+
+                    <p>No expense records</p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+
+        <!-- MONTHLY EXPENSE REPORT -->
+
+        <section class="report-section">
+
+            <h2>Monthly Expense Report</h2>
+
+            {% if monthly_reports %}
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Transactions</th>
+                                <th>Total Spending</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in monthly_reports %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ row["month"] }}
+                                    </td>
+
+                                    <td>
+                                        {{ row["total_transactions"] }}
+                                    </td>
+
+                                    <td>
+                                        ₹{{ "%.2f"|format(
+                                            row["total_spending"]
+                                        ) }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p>No monthly expense records available.</p>
+
+            {% endif %}
+
+        </section>
+
+
+
+        <!-- CATEGORY-WISE EXPENSE REPORT -->
+
+        <section class="report-section">
+
+            <h2>Category-wise Spending</h2>
+
+            {% if category_reports %}
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Transactions</th>
+                                <th>Total Spending</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in category_reports %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ row["category"] }}
+                                    </td>
+
+                                    <td>
+                                        {{ row["total_transactions"] }}
+                                    </td>
+
+                                    <td>
+                                        ₹{{ "%.2f"|format(
+                                            row["total_spending"]
+                                        ) }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <p>No category records available.</p>
+
+            {% endif %}
+
+        </section>
+
+
+
+        <!-- CHARTS AND ANALYTICS -->
+
+        <section class="charts-section">
+
+            <h2>Expense Analytics</h2>
+
+            <div class="charts-grid">
+
+
+                <!-- MONTHLY SPENDING BAR CHART -->
+
+                <div class="chart-card">
+
+                    <h3>Monthly Spending</h3>
+
+                    <canvas id="monthlyChart"></canvas>
+
+                </div>
+
+
+                <!-- CATEGORY-WISE PIE CHART -->
+
+                <div class="chart-card">
+
+                    <h3>Category-wise Spending</h3>
+
+                    <canvas id="categoryChart"></canvas>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- CHART JAVASCRIPT -->
+
+    <script>
+
+        // Get monthly chart data from Flask
+
+        const monthLabels = {{ month_labels | tojson }};
+
+        const monthlyTotals = {{ monthly_totals | tojson }};
+
+
+        // Get category chart data from Flask
+
+        const categoryLabels = {{ category_labels | tojson }};
+
+        const categoryTotals = JSON.parse('{{ category_totals | tojson | safe }}');
+
+
+
+        // ==============================
+        // MONTHLY SPENDING BAR CHART
+        // ==============================
+
+        const monthlyCanvas = document.getElementById("monthlyChart");
+
+        if (monthlyCanvas) {
+
+            new Chart(monthlyCanvas, {
+
+                type: "bar",
+
+                data: {
+
+                    labels: monthLabels,
+
+                    datasets: [{
+
+                        label: "Monthly Spending (₹)",
+
+                        data: monthlyTotals,
+
+                        backgroundColor: "#2563eb",
+
+                        borderRadius: 6
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: true,
+
+                    plugins: {
+
+                        legend: {
+
+                            display: false
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            title: {
+
+                                display: true,
+
+                                text: "Amount (₹)"
+
+                            }
+
+                        },
+
+                        x: {
+
+                            title: {
+
+                                display: true,
+
+                                text: "Month"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+
+        // ==============================
+        // CATEGORY-WISE PIE CHART
+        // ==============================
+
+        const categoryCanvas = document.getElementById("categoryChart");
+
+        if (categoryCanvas) {
+
+            new Chart(categoryCanvas, {
+
+                type: "pie",
+
+                data: {
+
+                    labels: categoryLabels,
+
+                    datasets: [{
+
+                        label: "Category Spending",
+
+                        data: categoryTotals,
+
+                        backgroundColor: [
+
+                            "#2563eb",
+
+                            "#16a34a",
+
+                            "#f59e0b",
+
+                            "#ef4444",
+
+                            "#8b5cf6",
+
+                            "#06b6d4"
+
+                        ],
+
+                        borderWidth: 2,
+
+                        borderColor: "#ffffff"
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    plugins: {
+
+                        legend: {
+
+                            position: "bottom"
+
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label: function(context) {
+
+                                    return context.label + ": ₹" +
+
+                                        context.parsed.toFixed(2);
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
